@@ -1,0 +1,302 @@
+.qv-object-kfcompareperiodchart .qv-object-content {
+  overflow: none;
+}
+
+.qv-object-kfcompareperiodchart td.numeric {
+	text-align: right;
+}
+
+
+
+
+.qv-object-kfcompareperiodchart button {
+	width: 100%;
+}
+
+/*
+.qv-object-kfcompareperiodchart .selecting circle{
+  stroke-width: 7px;
+  
+  stroke-opacity: .2;
+  fill-opacity: .2;
+}
+*/
+/*.qv-object-kfcompareperiodchart .selecting circle {
+  fill-opacity: .2;
+}*/
+/*
+.qv-object-kfcompareperiodchart .selecting circle.selected {
+  stroke: #f00;
+}*/
+
+.qv-object-kfcompareperiodchart .brush .extent {
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+
+.qv-object-kfcompareperiodchart .brush .extent.hover {
+  fill-opacity: .425;
+  shape-rendering: crispEdges;
+
+}
+
+.qv-object-kfcompareperiodchart .brush line {
+  stroke-opacity: .125;
+  stroke:#000;
+  shape-rendering: crispEdges;
+}
+
+.qv-object-kfcompareperiodchart .brush line.hover {
+  stroke-opacity: .425;
+  shape-rendering: crispEdges;
+}
+
+.qv-object-kfcompareperiodchart .kf-group path.kf-line {
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+.qv-object-kfcompareperiodchart .kf-group path.kf-area {
+  stroke: none;
+}
+
+
+.qv-object-kfcompareperiodchart .kf-overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.qv-object-kfcompareperiodchart .kf-point {
+
+  stroke-width: 1px;
+  
+  transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+  -moz-transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+  -webkit-transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+
+}
+
+.qv-object-kfcompareperiodchart .kf-point.selected {
+
+  stroke-width: 1px;
+  fill-opacity: .95 ;
+  stroke-opacity: .95 ;
+  stroke: #FFFFFF;
+  
+}
+
+.qv-object-kfcompareperiodchart line.kf-segment {
+  fill: none;
+  stroke-width: 1.5px;
+
+   transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+  -moz-transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+  -webkit-transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+}
+
+.qv-object-kfcompareperiodchart line.kf-segment.selected {
+  fill: none;
+  stroke-width: 3px;
+
+   transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+  -moz-transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+  -webkit-transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+}
+
+.qv-object-kfcompareperiodchart path.kf-segmentarea {
+  fill-opacity:0;
+  stroke-opacity:0;
+
+   transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+  -moz-transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+  -webkit-transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+}
+
+.qv-object-kfcompareperiodchart path.kf-segmentarea.selected {
+  fill-opacity:.3;
+
+   transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+  -moz-transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+  -webkit-transition: stroke-width 125ms linear, stroke-opacity 125ms linear;
+}
+
+
+.qv-object-kfcompareperiodchart  .kf-point.hover {
+  stroke-width: 1px;
+  fill-opacity: 1;
+  stroke-opacity: 1;
+}
+
+ 
+
+/*svg {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  display: block;
+  width:100%;
+  height:100%;
+}
+*/
+/**********
+*  Axes
+*/
+.qv-object-kfcompareperiodchart .kf-axis {
+  font: normal 12px/14px 'QlikView Sans', sans-serif;
+  color: #333;
+  pointer-events:none;
+}
+
+.qv-object-kfcompareperiodchart .kf-axis.kf-y {
+  font: normal 14px/16px 'QlikView Sans', sans-serif;
+}
+
+.qv-object-kfcompareperiodchart .kf-axis path {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .75;
+  shape-rendering: crispEdges;
+}
+
+.qv-object-kfcompareperiodchart .kf-axis path.domain {
+  stroke-opacity: .75;
+}
+
+.qv-object-kfcompareperiodchart .kf-axis.kf-x path.domain {
+  stroke-opacity: .25;
+}
+
+.qv-object-kfcompareperiodchart .kf-axis line {
+  fill: none;
+  stroke: #e5e5e5;
+  shape-rendering: crispEdges;
+}
+
+.qv-object-kfcompareperiodchart .kf-axis .zero line,
+/*this selector may not be necessary*/ .qv-object-kfcompareperiodchart .kf-axis line.zero {
+  stroke-opacity: .75;
+}
+
+.qv-object-kfcompareperiodchart .kf-axis .kf-axisMaxMin text {
+  font-weight: bold;
+}
+
+.qv-object-kfcompareperiodchart .x  .kf-axis .kf-axisMaxMin text,
+.qv-object-kfcompareperiodchart .x2 .kf-axis .kf-axisMaxMin text,
+.qv-object-kfcompareperiodchart .x3 .kf-axis .kf-axisMaxMin text {
+  text-anchor: middle
+}
+
+.qv-object-kfcompareperiodchart .kf-legend circle {
+  fill-opacity: 1;
+}
+
+.qv-object-kfcompareperiodchart .kf-legend .disabled circle {
+  fill-opacity: 0;
+}
+
+.qv-object-kfcompareperiodchart .kf-legend .kf-series {
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.qv-object-kfcompareperiodchart .kf-legend .kf-legend-text {
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.qv-object-kfcompareperiodchart text.resize-label {
+  cursor: default;
+  pointer-events: none;
+    position: absolute;
+    border: 1px solid rgba(102, 102, 102, 0.5);
+    background-color: #FFF;
+    padding: 5px 9px;
+    margin: 0px;
+    left: calc(50% + 5px);
+    max-height: calc(1em + 4px);
+    max-width: 150px;
+    min-width: 50px;
+    cursor: default;
+    border-radius: 6px;
+    background-clip: padding-box;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    
+  }
+
+  .qv-object-kfcompareperiodchart rect.resize {
+  cursor: default;
+  pointer-events: none;
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .75;
+    
+  }
+
+
+
+/* KF-Tooltip */
+
+div.kf-tooltip { 
+  position: absolute; 
+  -webkit-background-clip: padding-box;
+  -moz-background-clip: padding;
+  background-clip: padding-box;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  background: #2b2b2b;
+  text-align: left; 
+  font: 12px sans-serif;  
+  color: white;
+  pointer-events: none; 
+  
+} 
+div.kf-tooltip:after { 
+  top: 100%; 
+  left: 50%; 
+  border: solid transparent; 
+  content: " "; 
+  height: 0; 
+  width: 0; 
+  position: 
+  absolute; 
+  pointer-events: none; 
+  border-color: rgba(43, 43, 43, 0); 
+  border-top-color: #2b2b2b;
+  border-width: 8px; 
+  margin-left: -8px; 
+}
+
+.kf-tooltip table td.tooltip-series-color div {
+  width: 8px;
+  height: 8px;
+  vertical-align: middle;
+}
+
+.kf-tooltip table {
+  margin: 6px;
+  border-spacing:0;
+}
+
+
+.kf-tooltip table td {
+  padding: 2px 9px 2px 0;
+  vertical-align: middle;
+}
+
+.kf-tooltip table td.key {
+  font-weight:normal;
+}
+
+.kf-tooltip table td.value {
+  text-align: right;
+  font-weight: bold;
+}
+

@@ -1,0 +1,9 @@
+{
+	"name" : "Compare Period Chart",
+	"description" : "Line chart for comparing two time periods",
+	"icon" : "line-chart",
+	"type" : "visualization",
+	"version": "0.1",
+	"preview" : "line-chart",
+	"author": "Karl Fredberg"
+}
