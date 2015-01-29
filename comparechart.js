@@ -333,6 +333,9 @@ function compareChart() {
 				if (!showGridLines) {
 					g.selectAll('.kf-y.kf-axis .tick')
 						.style('stroke-opacity', 0);
+				} else {
+					g.selectAll('.kf-y.kf-axis .tick')
+						.style('stroke-opacity', 0.75);
 				}
 			}
 
@@ -669,6 +672,11 @@ function compareChart() {
 	chart.showTooltipChange = function(_) {
 		if (!arguments.length) return showTooltipChange;
 		showTooltipChange = _;
+		return chart;
+	};
+	chart.showGridLines = function(_) {
+		if (!arguments.length) return showGridLines;
+		showGridLines = _;
 		return chart;
 	};
 	chart.inEditMode = function(_) {

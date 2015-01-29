@@ -716,47 +716,25 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 									},
 									snapshot: !0
 								},
-								/*gridLines: {
+								gridLines: {
 									type: "items",
 									items: {
 										showGridLines: {
-											ref: "gridLine.auto",
+											ref: "gridLine.show",
 											type: "boolean",
-											translation: "properties.gridLine.spacing",
+											translation: "Grid lines",
 											component: "switch",
-											defaultValue: !0,
+											defaultValue: !1,
 											options: [{
-												value: !0,
-												translation: "Common.Auto"
-											}, {
 												value: !1,
-												translation: "Common.Custom"
+												translation: "properties.gridLine.noLines"
+											}, {
+												value: !0,
+												translation: "properties.style.line"
 											}]
-										},
-										gridSpacing: {
-											type: "number",
-											component: "dropdown",
-											ref: "gridLine.spacing",
-											defaultValue: 2,
-											options: [{
-												value: 0,
-												label: "properties.gridLine.noLines"
-											}, {
-												value: 1,
-												label: "properties.gridLine.wide"
-											}, {
-												value: 2,
-												label: "properties.gridLine.medium"
-											}, {
-												value: 3,
-												label: "properties.gridLine.narrow"
-											}],
-											show: function(a) {
-												return a.gridLine && !a.gridLine.auto
-											}
 										}
 									}
-								}*/
+								}
 							}
 						},
 						/*colorsAndLegend: {
@@ -972,7 +950,6 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 		paint: function($element, layout) {
 
-			console.log('layout');
 			console.log(layout);
 
 			var errors = []
@@ -1400,6 +1377,7 @@ var viz = function(data, labels, width, height, id, layout, that, isInEditMode) 
 		.layout(layout)
 		.showTooltipSymbol(layout.tooltip.showSymbol)
 		.showTooltipChange(layout.tooltip.showChange)
+		.showGridLines(layout.gridLine.show)
 		.inEditMode(isInEditMode)
 		.that(that)
 		.symbols(symbols)
