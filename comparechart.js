@@ -36,7 +36,7 @@ function compareChart() {
 		return d.y;
 	}
 	var sizeValue = function(d) {
-		return d.size || 0.1
+		return d.size || 0
 	}
 	var isArea = function(d) {
 		return d.area
@@ -51,6 +51,11 @@ function compareChart() {
 	var defsid = Math.floor(Math.random() * 100000);
 
 	var symbols = {};
+
+	var showTooltipSymbol = true
+
+	var showTooltipChange = true
+
 
 	var transitionDuration = 250
 
@@ -311,7 +316,7 @@ function compareChart() {
 
 
 */
-				
+
 				console.log("yAxis");
 				console.log(innerHeight);
 
@@ -478,7 +483,7 @@ function compareChart() {
 							return s[0] <= d.x && d.x <= s[1] && d.qElemNumbers;
 						})
 						.attr('r', function(d) {
-							return (s[0] <= d.x && d.x <= s[1] && d.qElemNumbers) ? 5 : d.size || 0.1;
+							return (s[0] <= d.x && d.x <= s[1] && d.qElemNumbers) ? 5 : d.size || 0;
 						});
 
 				}
@@ -560,10 +565,18 @@ function compareChart() {
 						diff = ''
 					}
 
+					if (!showTooltipSymbol) {
+						diffSymbol = ''
+					}
 
-					tooltipHtml = '<table><thead><tr><td colspan="6"><strong>' + formatDate(data[activeMeasureIdx].values[idx].x) + '</strong></td></tr></thead>' +
+					if (!showTooltipChange) {
+						diff = ''
+					}
+
+
+					tooltipHtml = '<table><thead><tr><td colspan="6"><strong>' + data[activeMeasureIdx].values[idx].xText + '</strong></td></tr></thead>' +
 						'<tbody><tr><td class="tooltip-series-color"><div style="background-color:rgb(' + hexToR(data[activeMeasureIdx].color) + ',' + hexToG(data[activeMeasureIdx].color) + ',' + hexToB(data[activeMeasureIdx].color) + ');"></div></td><td>' + data[activeMeasureIdx].key + ': </td><td>' + data[activeMeasureIdx].values[idx].yText + '</td><td ' + diffColor + '><strong>' + diffSymbol + '</strong></td><td>' + diff + '</td></tr>' +
-						'<tr><td colspan="4"><strong>' + formatDate(addDays(data[activeMeasureIdx + 1].values[idx].x, layout.qListObject.shiftDateBy)) + '</strong></td></tr>' +
+						'<tr><td colspan="4"><strong>' + data[activeMeasureIdx + 1].values[idx].xText + '</strong></td></tr>' +
 						'<tr><td class="tooltip-series-color"><div style="background-color: rgb(' + hexToR(data[activeMeasureIdx + 1].color) + ',' + hexToG(data[activeMeasureIdx + 1].color) + ',' + hexToB(data[activeMeasureIdx + 1].color) + ');"> </div></td><td>' + data[activeMeasureIdx].key + ': </td><td colspan="4">' + data[activeMeasureIdx + 1].values[idx].yText + '</td></tr></tbody></table>'
 
 					var offsetBody = getCoords(that.$element[0]);
@@ -646,6 +659,16 @@ function compareChart() {
 	chart.showLegend = function(_) {
 		if (!arguments.length) return showLegend;
 		showLegend = _;
+		return chart;
+	};
+	chart.showTooltipSymbol = function(_) {
+		if (!arguments.length) return showTooltipSymbol;
+		showTooltipSymbol = _;
+		return chart;
+	};
+	chart.showTooltipChange = function(_) {
+		if (!arguments.length) return showTooltipChange;
+		showTooltipChange = _;
 		return chart;
 	};
 	chart.inEditMode = function(_) {
@@ -897,7 +920,7 @@ function line() {
 			return d.y;
 		},
 		sizeValue = function(d) {
-			return singlePoint ? 3 : d.size || 0.1
+			return singlePoint ? 3 : d.size || 0
 		},
 		isArea = function(d) {
 			return d.area
@@ -1074,7 +1097,7 @@ function line() {
 			var area = groups.selectAll('path.kf-area')
 				.data(function(d) {
 					return isArea(d) ? [d] : []
-				}); 
+				});
 			area.enter().append('path')
 				.attr('class', 'kf-area')
 				.attr('d', function(d) {
@@ -1261,7 +1284,7 @@ function line() {
 
 
 			var segmentArea = wrap.select('.kf-segmentareagroups').selectAll('path.kf-segmentarea')
-				.data(segmentAreaData); 
+				.data(segmentAreaData);
 			segmentArea.enter().append('path')
 				.style('fill', function(d, i) {
 					return d.color
@@ -1525,7 +1548,7 @@ function line() {
 		return chart;
 	};
 
-	
+
 
 	return chart;
 };
@@ -1709,7 +1732,7 @@ function clearHighlights(id, singlePoint) {
 		.classed("hover", false)
 		.transition()
 		.attr('r', function(d, i) {
-			return singlePoint ? 3 : d.size || 0.1
+			return singlePoint ? 3 : d.size || 0
 		});
 };
 
@@ -1722,7 +1745,7 @@ function highlightPoint(id, pointIndex, clearPointIndex, singlePoint) {
 	d3.selectAll("#" + id + " .kf-point-" + clearPointIndex)
 		.classed("hover", false)
 		.attr('r', function(d, i) {
-			return singlePoint ? 3 : d.size || 0.1
+			return singlePoint ? 3 : d.size || 0
 		});
 };
 
@@ -1787,7 +1810,7 @@ function getOffset(elem) {
 }
 */
 
-function getCoords(elem) { 
+function getCoords(elem) {
 	var box = elem.getBoundingClientRect();
 
 	var body = document.body;

@@ -1,0 +1,55 @@
+define("client.property-panel/components/number-formatter/kf-dim-number-formatter", ["client.property-panel/component-utils", "text!./number-formatter.ng.html", "translator", "objects.utils/number-formatter", "objects.utils/date-formatter", "general.utils/number-formatting"], function(a, b, c, d, e, f) {
+		function g(a, b) {
+			var c, d, e, f;
+			switch (a.qDef.qNumberPresentations[0].qType) {
+				case "D":
+				case "T":
+				case "TS":
+					f = k, c = p;
+					break;
+				case "IV":
+					f = l, c = q;
+					break;
+				case "M":
+					f = m, c = o;
+					break;
+				case "R":
+					e = a.qDef.qNumberPresentations[0].qDec || ".", d = a.qDef.qNumberPresentations[0].qThou;
+				default:
+					f = n, c = o
+			}
+			return f.format(c, "undefined" != typeof b ? b : a.qDef.qNumberPresentations[0].qFmt, d, e)
+		}
+
+		function h(a, b) {
+			a.qDef.qNumberPresentations[0].qFmt = f.getDefaultNumericFormat(a.qDef.qNumberPresentations[0], b)
+		}
+
+		function i(a, b, c) {
+			return a === f.getDefaultNumericFormat(b.qDef.qNumberPresentations[0], c)
+		}
+		var j, k = new e("", "", "", "D"),
+			l = new e("", "", "", "IV"),
+			m = new d("", "", "", "M"),
+			n = new d("", "", "", "F"),
+			o = 1000.12,
+			p = new Date(2015, 1, 17, 15, 30, 40),
+			q = 1.0453718171296298;
+		return j = {
+			template: b,
+			controller: ["$scope", function(b) {
+				var d = function() {
+					return b.data
+				};
+				a.defineLabel(b, b.definition, d, b.args.handler), a.defineVisible(b, b.args.handler), a.defineReadOnly(b, b.args.handler), a.defineChange(b, b.args.handler), a.defineValue(b, b.definition, d), m.thousandDelimiter = b.args.localeInfo.qMoneyThousandSep || "", m.decimalDelimiter = b.args.localeInfo.qMoneyDecimalSep || ".", l.pattern = b.args.localeInfo.qTimeFmt, n.thousandDelimiter = b.args.localeInfo.qThousandSep || "", n.decimalDelimiter = b.args.localeInfo.qDecimalSep || ".", b.onkeyup = function(a) {
+					b.$apply(function() {
+						b.example = g(b.data, a[0].value)
+					})
+				}, b.example_title = c.get("properties.numberFormatting.example"), b.example = g(b.data), b.resetting = !1, b.isDefaultFormat = i(b.data.qDef.qNumberPresentations[0].qFmt, b.data, b.args.localeInfo), b.showReset = "R" === b.data.qDef.qNumberPresentations[0].qType, b.reset = function() {
+					b.resetting || (h(b.data, b.args.localeInfo), b.resetting = !0, b.$emit("saveProperties"))
+				}, b.$on("datachanged", function() {
+					b.example = g(b.data), b.resetting = !1, b.isDefaultFormat = i(b.data.qDef.qNumberPresentations[0].qFmt, b.data, b.args.localeInfo), b.showReset = "R" === b.data.qDef.qNumberPresentations[0].qType
+				})
+			}]
+		}
+	})
