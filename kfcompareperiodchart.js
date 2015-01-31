@@ -4,7 +4,7 @@
 //Add custom format for the dimensions
 
 
-define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.utils/property-resolver", "general.utils/number-formatting", "util", "qlik", "client.utils/state", "./d3", "./components/kfMeasureList", "./components/kfDimNumberFormatter", "./comparechart", "./lodash.min"], function($, cssContent, translator, pResolver, numFormatting, util, qlik, state) {
+define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.utils/property-resolver", "general.utils/number-formatting", "util", "qlik", "client.utils/state", "./d3", "./components/kfMeasureList", "./components/kfTooltipNumberFormatter", "./components/kfDimNumberFormatter", "./comparechart", "./lodash.min"], function($, cssContent, translator, pResolver, numFormatting, util, qlik, state) {
 	'use strict';
 	$("<style>").html(cssContent).appendTo("head");
 
@@ -85,7 +85,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 	}
 
 	function k(b, d) {
-		return pResolver.getValue(b, "qListObjectDef.qDef.qNumberPresentations.qFmt") === numFormatting.getDefaultNumericFormat(b.qListObjectDef.qDef.qNumberPresentations, d ? d.localeInfo : "")
+		return pResolver.getValue(b, "tooltip.qNumberPresentations.qFmt") === numFormatting.getDefaultNumericFormat(b.tooltip.qNumberPresentations, d ? d.localeInfo : "")
 	}
 
 	function l(b, d) {
@@ -98,8 +98,8 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 	}
 
 	function n(b) {
-		var c = pResolver.getValue(b, "qListObjectDef.qDef.qNumberPresentations.qType");
-		return ["R", "M", "IV"].contains(c) || "U" !== c && pResolver.getValue(b, "qListObjectDef.qDef.numFormatFromTemplate", !0) === !1
+		var c = pResolver.getValue(b, "tooltip.qNumberPresentations.qType");
+		return ["R", "M", "IV"].contains(c) || "U" !== c && pResolver.getValue(b, "tooltip.numFormatFromTemplate", !0) === !1
 	}
 
 
@@ -114,16 +114,6 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 				comparePeriodType: 0,
 				shiftDateBy: -364,
 				periodType: 0,
-				isDate: false,
-				qDef: {
-					qNumberPresentations: [{
-						qType: 'D',
-						qFmt: 'WWW YYYY-MM-DD',
-						qUseThou: 0,
-						qnDec: 0
-
-					}]
-				},
 				qSortCriterias: {
 					qSortByNumeric: 1
 				},
@@ -229,13 +219,6 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 								label: "Selected dates only"
 							}],
 							defaultValue: 0
-						},
-						isDate: {
-							ref: "qListObjectDef.isDate",
-							label: "isDate",
-							type: "boolean",
-							defaultValue: false,
-							show: false
 						},
 						qSortByNumeric: {
 							type: "numeric",
@@ -693,9 +676,9 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 									}, {
 										value: "zero",
 										translation: "properties.nullMode.zero"
-									/*}, {
-										value: "connect",
-										translation: "properties.nullMode.connect"*/
+											/*}, {
+												value: "connect",
+												translation: "properties.nullMode.connect"*/
 									}],
 									defaultValue: "gap"
 								},
@@ -891,27 +874,28 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 								}
 							}
 						},
+						
 						tooltip: {
 							type: "items",
 							label: "Tooltip",
 							grouped: !0,
 							items: {
-								axis: {
+								tooltipOptions: {
 									type: "items",
 									items: {
 										format: {
 											type: "string",
-											component: "kf-dim-number-formatter",
-											ref: "qListObjectDef.qDef.qNumberPresentations.0.qFmt",
+											component: "kf-tooltip-number-formatter",
+											ref: "tooltip.qNumberPresentations.0.qFmt",
 											resetTranslation: "properties.numberFormatting.resetPattern",
 											translation: "properties.numberFormatting.formatPattern",
 											defaultValue: "WWW YYYY-MM-DD",
 											show: !0,
 											invalid: function(a, b, c) {
-												if (["D", "T", "TS", "IV"].contains(a.qListObjectDef.qDef.qNumberPresentations[0].qType)) return !1;
-												var d = "R" === a.qListObjectDef.qDef.qNumberPresentations[0].qType ? a.qListObjectDef.qDef.qNumberPresentations[0].qDec : c.localeInfo["q" + ("M" === a.qListObjectDef.qDef.qNumberPresentations[0].qType ? "Money" : "") + "DecimalSep"],
+												if (["D", "T", "TS", "IV"].contains(a.tooltip.qNumberPresentations[0].qType)) return !1;
+												var d = "R" === a.tooltip.qNumberPresentations[0].qType ? a.tooltip.qNumberPresentations[0].qDec : c.localeInfo["q" + ("M" === a.tooltip.qNumberPresentations[0].qType ? "Money" : "") + "DecimalSep"],
 													e = new RegExp("(0|#)" + util.escapeRegExp(d) + "0*#*"),
-													f = (a.qListObjectDef.qDef.qNumberPresentations[0].qFmt || "").split(";"),
+													f = (a.tooltip.qNumberPresentations[0].qFmt || "").split(";"),
 													h = f[0].match(e),
 													i = h && h[0] ? h[0].length - 2 : 0,
 													j = f[1] ? f[1].match(e) : null,
@@ -991,9 +975,10 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 				});
 			}
 
-			console.log(layout);
-
 			var dateFieldIsDate = layout.qListObject.qDimensionInfo.qNumFormat.qType == 'D'
+
+			console.log('dateFieldIsDate');
+			console.log(dateFieldIsDate);
 
 			if (!dateFieldIsDate) {
 				errors.push({
@@ -1036,294 +1021,294 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 					var minDate = possibleDates[0]; //+ layout.qListObject.shiftDateBy;
 					var maxDate = possibleDates[possibleDates.length - 1];
 				}
-			}
-
-			//update the measures
-
-			this.backendApi.getProperties().then(function(reply) {
-				updateDefaultModifiers(reply);
-
-				if (reply.qListObjectDef.comparePeriodType == 0) { //previous year
-
-					reply.qListObjectDef.shiftDateBy = -364
-
-				} else if (reply.qListObjectDef.comparePeriodType == 1) { //previous period
-
-					reply.qListObjectDef.shiftDateBy = minDate - maxDate - 1
-
-				}
-
-				me.backendApi.setProperties(reply);
-			});
-
-			this.backendApi.getProperties().then(function(reply) {
-
-				reply.currentPeriod.qHyperCubeDef.qDimensions.length = 0;
-				reply.comparePeriod.qHyperCubeDef.qDimensions.length = 0;
-
-				reply.currentPeriod.qHyperCubeDef.qDimensions.push({
-					qDef: {
-						qFieldDefs: [reply.qListObjectDef.qDef.qFieldDefs[0]],
-						qFieldLabels: [reply.qListObjectDef.qDef.qFieldLabels[0]],
-						autoSort: true,
-						qSortCriterias: [reply.qListObjectDef.qSortCriterias],
-						qNumberPresentations: reply.qListObjectDef.qDef.qNumberPresentations
-					},
-					qGrouping: 'C',
-					qActiveField: 0
 
 
+				//update the measures
 
-				});
-				reply.comparePeriod.qHyperCubeDef.qDimensions.push({
-					qDef: {
-						qFieldDefs: [reply.qListObjectDef.qDef.qFieldDefs[0]],
-						qFieldLabels: [reply.qListObjectDef.qDef.qFieldLabels[0]],
-						autoSort: true,
-						qSortCriterias: [reply.qListObjectDef.qSortCriterias],
-						qNumberPresentations: reply.qListObjectDef.qDef.qNumberPresentations
-					},
-					qGrouping: 'C',
-					qActiveField: 0,
+				this.backendApi.getProperties().then(function(reply) {
+					updateDefaultModifiers(reply);
 
+					if (reply.qListObjectDef.comparePeriodType == 0) { //previous year
 
+						reply.qListObjectDef.shiftDateBy = -364
 
+					} else if (reply.qListObjectDef.comparePeriodType == 1) { //previous period
+
+						reply.qListObjectDef.shiftDateBy = minDate - maxDate - 1
+
+					}
+
+					me.backendApi.setProperties(reply);
 				});
 
-				//
-				console.log('reply');
-				console.log(reply);
+				this.backendApi.getProperties().then(function(reply) {
 
-				//remove old measures
-				reply.currentPeriod.qHyperCubeDef.qMeasures.length = 0;
-				reply.comparePeriod.qHyperCubeDef.qMeasures.length = 0;
+					reply.currentPeriod.qHyperCubeDef.qDimensions.length = 0;
+					reply.comparePeriod.qHyperCubeDef.qDimensions.length = 0;
 
-				//loop through all rows and columns and create a measure for each combination
-				reply.kfMeasureList.forEach(function(kfMea, meaKey) {
-					reply.kfModifierList.forEach(function(kfMod, modKey) {
-						var qDefString = kfMea.qDef.qDef;
-						var columnExpString = kfMod.kfColumnExp;
-						var kfFiltersString = '';
-						var modifierLength = reply.kfModifierList.length;
+					reply.currentPeriod.qHyperCubeDef.qDimensions.push({
+						qDef: {
+							qFieldDefs: [reply.qListObjectDef.qDef.qFieldDefs[0]],
+							qFieldLabels: [reply.qListObjectDef.qDef.qFieldLabels[0]],
+							autoSort: true,
+							qSortCriterias: [reply.qListObjectDef.qSortCriterias],
+							qNumberPresentations: reply.tooltip.qNumberPresentations
+						},
+						qGrouping: 'C',
+						qActiveField: 0
 
-						if (!kfMea.kfMeasuresType) {
-							qDefString = qDefString.replace(/Sum\(/gi, "Sum(#Set ")
-								.replace(/Avg\(/gi, "Avg(#Set ")
-								.replace(/Count\(/gi, "Count(#Set ")
-								.replace(/Max\(/gi, "Max(#Set ")
-								.replace(/Min\(/gi, "Min(#Set ");
-						};
 
-						switch (kfMod.kfModifierType) {
-							case 0: //set
-								qDefString = qDefString.replace(/#set/gi, "{$< #filters >}")
-									.replace(/#filters/gi, kfMod.kfSet.substring(3, kfMod.kfSet.length - 2));
-								break;
-							case 1: //filter set
-								qDefString = qDefString.replace(/#set/gi, "{$< #filters >}")
-									.replace(/#filters/gi, kfMod.kfFilterSetList.map(function(d) {
-										return d.filterExpression;
-									}).join(','));
-								break;
-							case 2: //column expession
-								var columnsNum = getColumnNumbers(kfMod.kfColumnExp).map(function(d) {
-									return {
-										"origNum": d,
-										"newNum": (meaKey * modifierLength) + d
+
+					});
+					reply.comparePeriod.qHyperCubeDef.qDimensions.push({
+						qDef: {
+							qFieldDefs: [reply.qListObjectDef.qDef.qFieldDefs[0]],
+							qFieldLabels: [reply.qListObjectDef.qDef.qFieldLabels[0]],
+							autoSort: true,
+							qSortCriterias: [reply.qListObjectDef.qSortCriterias],
+							qNumberPresentations: reply.tooltip.qNumberPresentations
+						},
+						qGrouping: 'C',
+						qActiveField: 0,
+
+
+
+					});
+
+					//remove old measures
+					reply.currentPeriod.qHyperCubeDef.qMeasures.length = 0;
+					reply.comparePeriod.qHyperCubeDef.qMeasures.length = 0;
+
+					//loop through all rows and columns and create a measure for each combination
+					reply.kfMeasureList.forEach(function(kfMea, meaKey) {
+						reply.kfModifierList.forEach(function(kfMod, modKey) {
+							var qDefString = kfMea.qDef.qDef;
+							var columnExpString = kfMod.kfColumnExp;
+							var kfFiltersString = '';
+							var modifierLength = reply.kfModifierList.length;
+
+							if (!kfMea.kfMeasuresType) {
+								qDefString = qDefString.replace(/Sum\(/gi, "Sum(#Set ")
+									.replace(/Avg\(/gi, "Avg(#Set ")
+									.replace(/Count\(/gi, "Count(#Set ")
+									.replace(/Max\(/gi, "Max(#Set ")
+									.replace(/Min\(/gi, "Min(#Set ");
+							};
+
+							switch (kfMod.kfModifierType) {
+								case 0: //set
+									qDefString = qDefString.replace(/#set/gi, "{$< #filters >}")
+										.replace(/#filters/gi, kfMod.kfSet.substring(3, kfMod.kfSet.length - 2));
+									break;
+								case 1: //filter set
+									qDefString = qDefString.replace(/#set/gi, "{$< #filters >}")
+										.replace(/#filters/gi, kfMod.kfFilterSetList.map(function(d) {
+											return d.filterExpression;
+										}).join(','));
+									break;
+								case 2: //column expession
+									var columnsNum = getColumnNumbers(kfMod.kfColumnExp).map(function(d) {
+										return {
+											"origNum": d,
+											"newNum": (meaKey * modifierLength) + d
+										}
+									});
+									columnsNum.forEach(function(num, numKey) {
+										var regEx = "/Column\(" + num.origNum + "\)/gi";
+										columnExpString = columnExpString.replace(regEx, "Column(" + num.newNum + ")");
+									});
+									qDefString = columnExpString;
+									break;
+								default:
+									qDefString = qDefString.replace(/#set/gi, "");
+							}
+							if (modKey == 0) {
+								reply.currentPeriod.qHyperCubeDef.qMeasures.push({
+									qDef: {
+										qDef: qDefString,
+										qLabel: kfMea.kfMeasureLabel + ' - ' + kfMod.kfModifierLabel,
+										qNumFormat: kfMea.qDef.qNumFormat
 									}
 								});
-								columnsNum.forEach(function(num, numKey) {
-									var regEx = "/Column\(" + num.origNum + "\)/gi";
-									columnExpString = columnExpString.replace(regEx, "Column(" + num.newNum + ")");
+							} else {
+								reply.comparePeriod.qHyperCubeDef.qMeasures.push({
+									qDef: {
+										qDef: qDefString,
+										qLabel: kfMea.kfMeasureLabel + ' - ' + kfMod.kfModifierLabel,
+										qNumFormat: kfMea.qDef.qNumFormat
+									}
 								});
-								qDefString = columnExpString;
-								break;
-							default:
-								qDefString = qDefString.replace(/#set/gi, "");
-						}
-						if (modKey == 0) {
-							reply.currentPeriod.qHyperCubeDef.qMeasures.push({
-								qDef: {
-									qDef: qDefString,
-									qLabel: kfMea.kfMeasureLabel + ' - ' + kfMod.kfModifierLabel,
-									qNumFormat: kfMea.qDef.qNumFormat
-								}
-							});
-						} else {
-							reply.comparePeriod.qHyperCubeDef.qMeasures.push({
-								qDef: {
-									qDef: qDefString,
-									qLabel: kfMea.kfMeasureLabel + ' - ' + kfMod.kfModifierLabel,
-									qNumFormat: kfMea.qDef.qNumFormat
-								}
-							});
-						}
+							}
+						});
 					});
+					me.backendApi.setProperties(reply);
 				});
-				me.backendApi.setProperties(reply);
-			});
 
-			//getData
+				//getData
 
-			var data = []
-			var dimBuckets = []
+				var data = []
+				var dimBuckets = []
 
-			// Scale the range of the data
+				// Scale the range of the data
 
-			if (layout.qListObject.periodType == 1) {
-				if (selectedates.length > 0) {
-					dimBuckets = selectedates.map(function(d) {
-						return convertDate(d);
-					});
-				} else {
-					dimBuckets = possibleDates.map(function(d) {
-						return convertDate(d);
-					});
-				}
-
-			} else {
-				dimBuckets = d3.time.days(convertDate(minDate), convertDate(maxDate + 1));
-			}
-
-			var dimRangeBuckets = d3.time.days(convertDate(minDate), convertDate(maxDate + 1));
-
-			var color = d3.scale.category10().domain(d3.range(0, 10)); // set the colour scale
-
-			if (layout.kfMeasureList.length == 0) {
-				errors.push({
-					"message": "Missing measures"
-				});
-			}
-			layout.kfMeasureList.forEach(function(kfMea, key) {
-
-
-				if (kfMea.qDef.qDef == '') {
-					errors.push({
-						"message": "Measure nr " + (key + 1) + " is empty"
-					});
-				} else {
-
-					var missingValues = 0
-
-					var missingValue = layout.nullMode == 'gap' ? null : 0;
-
-					var dataPointSize = layout.dataPoint.show ? 3 : 0
-
-					var newData = qMatrixCurrent.map(function(d) {
-
-
-						if (d[key + 1].qNum == 'NaN') {
-							missingValues += 1
-						}
-
-						return {
-							"qElemNumbers": [d[0].qElemNumber],
-							"x": convertDate(d[0].qNum),
-							"xText": d[0].qText,
-							"y": d[key + 1].qNum,
-							"yText": d[key + 1].qText,
-							"size": dataPointSize
-						}
-					});
-
-					if (missingValues == newData.length) {
-						errors.push({
-							"message": "Measure nr " + (key + 1) + " has no data"
+				if (layout.qListObject.periodType == 1) {
+					if (selectedates.length > 0) {
+						dimBuckets = selectedates.map(function(d) {
+							return convertDate(d);
+						});
+					} else {
+						dimBuckets = possibleDates.map(function(d) {
+							return convertDate(d);
 						});
 					}
 
-					newData = dimBuckets
-						.map(function(dimBucket) {
-							return _.find(newData, {
-								x: dimBucket
-							}) || {
-								x: dimBucket,
-								xText: '-',
-								y: missingValue,
-								yText: '-',
-								size: dataPointSize
-							};
-						});
+				} else {
+					dimBuckets = d3.time.days(convertDate(minDate), convertDate(maxDate + 1));
+				}
 
-					newData = dimRangeBuckets
-						.map(function(dimRangeBuckets) {
-							return _.find(newData, {
-								x: dimRangeBuckets
-							}) || {
-								x: dimRangeBuckets,
-								xText: '-',
-								y: missingValue,
-								yText: '-',
-								size: dataPointSize
-							};
-						});
+				var dimRangeBuckets = d3.time.days(convertDate(minDate), convertDate(maxDate + 1));
 
-					data.push({
-						"key": kfMea.qDef.kfMeasureLabel,
-						"label": "",
-						"color": color(key * 2),
-						"area": layout.lineType == 'area',
-						"disabled": key != layout.activeMeasure,
-						"values": newData
-					});
+				var color = d3.scale.category10().domain(d3.range(0, 10)); // set the colour scale
 
-					newData = qMatrixCompare.map(function(d) {
-						return {
-							"x": convertDate(d[0].qNum - layout.qListObject.shiftDateBy),
-							"xText": d[0].qText,
-							"y": d[key + 1].qNum,
-							"yText": d[key + 1].qText,
-							"size": dataPointSize
-						}
-					});
-
-					newData = dimBuckets
-						.map(function(dimBucket) {
-							return _.find(newData, {
-								x: dimBucket
-							}) || {
-								x: dimBucket,
-								xText: '-',
-								y: missingValue,
-								yText: '-',
-								size: dataPointSize
-							};
-						});
-
-					newData = dimRangeBuckets
-						.map(function(dimRangeBuckets) {
-							return _.find(newData, {
-								x: dimRangeBuckets
-							}) || {
-								x: dimRangeBuckets,
-								xText: '-',
-								y: missingValue,
-								yText: '-',
-								size: dataPointSize
-							};
-						});
-
-					data.push({
-						"key": kfMea.qDef.kfMeasureLabel + ' - compare',
-						"label": "",
-						"color": color((key * 2) + 1),
-						"comparePeriod": true,
-						"disabled": key != layout.activeMeasure,
-						"values": newData
+				if (layout.kfMeasureList.length == 0) {
+					errors.push({
+						"message": "Missing measures"
 					});
 				}
-			});
-
-			var labels = layout.currentPeriod.qHyperCube.qDimensionInfo.map(function(d) {
-				return d.qFallbackTitle;
-			});
-
-			// create a new array that contains the measure labels
-			labels.push(layout.currentPeriod.qHyperCube.qMeasureInfo.map(function(d) {
-				return d.qFallbackTitle;
-			}));
+				layout.kfMeasureList.forEach(function(kfMea, key) {
 
 
+					if (kfMea.qDef.qDef == '') {
+						errors.push({
+							"message": "Measure nr " + (key + 1) + " is empty"
+						});
+					} else {
+
+						var missingValues = 0
+
+						var missingValue = layout.nullMode == 'gap' ? null : 0;
+
+						var dataPointSize = layout.dataPoint.show ? 3 : 0
+
+						var newData = qMatrixCurrent.map(function(d) {
+
+
+							if (d[key + 1].qNum == 'NaN') {
+								missingValues += 1
+							}
+
+							return {
+								"qElemNumbers": [d[0].qElemNumber],
+								"x": convertDate(d[0].qNum),
+								"xText": d[0].qText,
+								"y": d[key + 1].qNum,
+								"yText": d[key + 1].qText,
+								"size": dataPointSize
+							}
+						});
+
+						if (missingValues == newData.length) {
+							errors.push({
+								"message": "Measure nr " + (key + 1) + " has no data"
+							});
+						}
+
+						newData = dimBuckets
+							.map(function(dimBucket) {
+								return _.find(newData, {
+									x: dimBucket
+								}) || {
+									x: dimBucket,
+									xText: '-',
+									y: missingValue,
+									yText: '-',
+									size: dataPointSize
+								};
+							});
+
+						newData = dimRangeBuckets
+							.map(function(dimRangeBuckets) {
+								return _.find(newData, {
+									x: dimRangeBuckets
+								}) || {
+									x: dimRangeBuckets,
+									xText: '-',
+									y: missingValue,
+									yText: '-',
+									size: dataPointSize
+								};
+							});
+
+						data.push({
+							"key": kfMea.qDef.kfMeasureLabel,
+							"label": "",
+							"color": color(key * 2),
+							"area": layout.lineType == 'area',
+							"disabled": key != layout.activeMeasure,
+							"values": newData
+						});
+
+						newData = qMatrixCompare.map(function(d) {
+							return {
+								"x": convertDate(d[0].qNum - layout.qListObject.shiftDateBy),
+								"xText": d[0].qText,
+								"y": d[key + 1].qNum,
+								"yText": d[key + 1].qText,
+								"size": dataPointSize
+							}
+						});
+
+						newData = dimBuckets
+							.map(function(dimBucket) {
+								return _.find(newData, {
+									x: dimBucket
+								}) || {
+									x: dimBucket,
+									xText: '-',
+									y: missingValue,
+									yText: '-',
+									size: dataPointSize
+								};
+							});
+
+						newData = dimRangeBuckets
+							.map(function(dimRangeBuckets) {
+								return _.find(newData, {
+									x: dimRangeBuckets
+								}) || {
+									x: dimRangeBuckets,
+									xText: '-',
+									y: missingValue,
+									yText: '-',
+									size: dataPointSize
+								};
+							});
+
+						data.push({
+							"key": kfMea.qDef.kfMeasureLabel + ' - compare',
+							"label": "",
+							"color": color((key * 2) + 1),
+							"comparePeriod": true,
+							"disabled": key != layout.activeMeasure,
+							"values": newData
+						});
+					}
+				});
+
+
+				var labels = layout.currentPeriod.qHyperCube.qDimensionInfo.map(function(d) {
+					return d.qFallbackTitle;
+				});
+
+				// create a new array that contains the measure labels
+				labels.push(layout.currentPeriod.qHyperCube.qMeasureInfo.map(function(d) {
+					return d.qFallbackTitle;
+				}));
+
+			}
+
+			console.log('errors');
+			console.log(errors);
 			// Chart object width
 			var width = $element.width();
 			// Chart object height
