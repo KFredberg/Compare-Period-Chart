@@ -1,6 +1,8 @@
 //TODO 
 //Remove animations for area and line
-//Y-Axis
+//Y-Axis scale and ticks
+//Show/hide axis labels/ticks
+//X-Axis ticks format
 //Cleanup code
 function compareChart() {
 
@@ -52,6 +54,10 @@ function compareChart() {
 
 	var symbols = {};
 
+	var dimFormat = function(d) {
+		return d
+	}
+
 	var showTooltipSymbol = true
 
 	var showTooltipChange = true
@@ -72,7 +78,7 @@ function compareChart() {
 	yAxis.orient('left');
 	xAxis.orient('bottom');
 
-	var x = d3.time.scale(),
+	var x = d3.scale.linear(),
 		y = d3.scale.linear();
 	var x0, y0;
 
@@ -86,9 +92,12 @@ function compareChart() {
 
 	var parseDate = d3.time.format("%Y-%m-%d").parse,
 		formatTime = d3.time.format("%e %B"),
-		formatDate = d3.time.format("%A %Y-%m-%d"),
 		formatValue = d3.format("s"),
 		formatPercent = d3.format(",.1%");
+	var formatDate = function(d) {
+		var output = dimFormat.format(d);
+		return output;
+	};
 
 	function chart(selection) {
 		selection.each(function(data) {
@@ -259,23 +268,11 @@ function compareChart() {
 				var pxPerLabels = rotateXLabels ? 30 : 100;
 				var labelsToShow = Math.min(Math.ceil(innerWidth / pxPerLabels), data[0].values.length);
 
+
 				xAxis
 					.scale(x)
-					.tickFormat(format)
-					.tickSize(0)
-					.tickPadding(8);
-
-				xAxis.ticks(function(start, end) {
-					start = d3.time.hour.offset(start, 12);
-					end = d3.time.hour.offset(end, -12)
-					var result = [start];
-					if (labelsToShow > 1) {
-						for (var i = 0; i <= labelsToShow - 1; i++) {
-							result.push(new Date(start.getTime() + ((end.getTime() - start.getTime()) / (labelsToShow - 1)) * i))
-						}
-					}
-					return result;
-				});
+					.tickFormat(formatDate)
+					.ticks(labelsToShow);
 
 				g.select('.kf-x.kf-axis')
 					.attr('transform', 'translate(0,' + y.range()[0] + ')');
@@ -317,8 +314,6 @@ function compareChart() {
 
 */
 
-				console.log("yAxis");
-				console.log(innerHeight);
 
 				yAxis
 					.scale(y)
@@ -338,6 +333,8 @@ function compareChart() {
 						.style('stroke-opacity', 0.75);
 				}
 			}
+
+
 
 			var bisectDate = d3.bisector(function(d) {
 				return d.x;
@@ -363,155 +360,162 @@ function compareChart() {
 
 			var xAxisHeight = rotateXLabels ? 62 : 22;
 
-			var brush = d3.svg.brush()
-				.x(x)
-				.on("brushstart", brushstart)
-				.on("brush", brushmove)
-				.on("brushend", brushend);
+			if (!inEditMode) {
 
-			var brushg = wrap.append("g")
-				.attr("class", "brush")
-				.attr("height", height)
-				.call(brush);
+				var brush = d3.svg.brush()
+					.x(x)
+					.on("brushstart", brushstart)
+					.on("brush", brushmove)
+					.on("brushend", brushend);
 
-			brushg.selectAll("rect.background")
-				.attr("height", xAxisHeight)
-				.style("cursor", "default")
-				.attr("transform", 'translate(0,' + innerHeight + ')');
+				var brushg = wrap.append("g")
+					.attr("class", "brush")
+					.attr("height", height)
+					.call(brush);
 
-			brushg.selectAll("rect.extent")
-				.style("cursor", "default")
-				.attr("height", xAxisHeight)
-				.attr('transform', 'translate(0, ' + innerHeight + ')')
-				.on("mouseover", function() {
-					d3.select(this)
-						.classed('hover', true);
-				})
-				.on("mouseout", function() {
-					d3.select(this)
-						.classed('hover', false);
-				});
-			brushg.selectAll(".resize").append("line")
-				.attr("transform", "translate(0," + 0 + ")")
-				.attr('x1', 0)
-				.attr('x2', 0)
-				.attr('y1', 0)
-				.attr('y2', innerHeight + xAxisHeight)
+				brushg.selectAll("rect.background")
+					.attr("height", xAxisHeight)
+					.style("cursor", "default")
+					.attr("transform", 'translate(0,' + innerHeight + ')');
 
-			brushg.selectAll(".resize").selectAll("rect")
-				.attr("height", innerHeight)
-				.attr("width", '20px')
-				.on("mouseover", function() {
-					d3.select(this.parentNode).selectAll("line")
-						.classed('hover', true);
-				})
-				.on("mouseout", function() {
-					d3.select(this.parentNode).selectAll("line")
-						.classed('hover', false);
-				});
+				brushg.selectAll("rect.extent")
+					.style("cursor", "default")
+					.attr("height", xAxisHeight)
+					.attr('transform', 'translate(0, ' + innerHeight + ')')
+					.on("mouseover", function() {
+						d3.select(this)
+							.classed('hover', true);
+					})
+					.on("mouseout", function() {
+						d3.select(this)
+							.classed('hover', false);
+					});
+				brushg.selectAll(".resize").append("line")
+					.attr("transform", "translate(0," + 0 + ")")
+					.attr('x1', 0)
+					.attr('x2', 0)
+					.attr('y1', 0)
+					.attr('y2', innerHeight + xAxisHeight)
 
-			var format = d3.time.format("%Y-%m-%d");
-			var s = brush.extent();
-
-
-			brushg.selectAll(".resize").append("rect")
-				.attr("x", -48)
-				.attr("y", -25)
-				.attr("height", 25)
-				.attr("width", 90)
-				.attr("rx", 6)
-				.attr("ry", 6)
-				.style("stroke", "grey")
-				.style("fill", "white")
-				.style("stroke-width", '1px');
+				brushg.selectAll(".resize").selectAll("rect")
+					.attr("height", innerHeight)
+					.attr("width", '20px')
+					.on("mouseover", function() {
+						d3.select(this.parentNode).selectAll("line")
+							.classed('hover', true);
+					})
+					.on("mouseout", function() {
+						d3.select(this.parentNode).selectAll("line")
+							.classed('hover', false);
+					});
 
 
-			brushg.selectAll(".resize.e").append("text")
-				.classed('resize-label', true)
-				.attr("x", -40)
-				.attr("y", -9)
-				.text(function() {
-					return format(s[1]) == format(s[0]) ? '' : format(s[1]);
-				});
+				var s = brush.extent();
 
-			brushg.selectAll(".resize.w").append("text")
-				.classed('resize-label', true)
-				.attr("x", -40)
-				.attr("y", -9)
-				.text(function() {
-					return format(s[1]) == format(s[0]) ? '' : format(d3.time.day.offset(s[0], 1));
-				});
+				brushg.selectAll(".resize").append("rect")
+					.attr("x", -48)
+					.attr("y", -25)
+					.attr("height", 25)
+					.attr("width", 90)
+					.attr("rx", 6)
+					.attr("ry", 6)
+					.style("stroke", "grey")
+					.style("fill", "white")
+					.style("stroke-width", '1px');
+
+
+				brushg.selectAll(".resize.e").append("text")
+					.classed('resize-label', true)
+					.attr("x", -40)
+					.attr("y", -9)
+					.text(function() {
+						return formatDate(s[1]) == formatDate(s[0]) ? '' : formatDate(s[1]);
+					});
+
+				brushg.selectAll(".resize.w").append("text")
+					.classed('resize-label', true)
+					.attr("x", -40)
+					.attr("y", -9)
+					.text(function() {
+						return formatDate(s[1]) == formatDate(s[0]) ? '' : formatDate(s[0] + 1);
+					});
+			}
 
 
 			function brushstart() {
-				selectionMode = true;
+				if (!inEditMode) {
+					selectionMode = true;
+				}
 			}
 
 			function brushmove() {
-				var s = brush.extent();
-				var format = d3.time.format("%Y-%m-%d");
-				var arr = [];
+				if (!inEditMode) {
+					var s = brush.extent();
+					var arr = [];
 
-				brushg.selectAll(".resize.e text")
-					.text(function() {
-						return format(s[1]) == format(s[0]) ? '' : format(s[1]);
-					});
-
-				brushg.selectAll(".resize.w text")
-					.text(function() {
-						return format(s[1]) == format(s[0]) ? '' : format(d3.time.day.offset(s[0], 1));
-					});
-
-
-				data[0].values.forEach(function(d) {
-					if (s[0] <= d.x && d.x <= s[1]) {
-						arr = arr.concat(d.qElemNumbers ? d.qElemNumbers : []);
-					}
-				});
-
-				if (arr.length > 0) {
-
-					var segment = wrap.selectAll('line');
-					segment.classed("selected", function(d) {
-						return s[0] <= d.x1 && d.x2 <= s[1];
-					});
-
-					var segmentArea = wrap.selectAll('.kf-segmentarea');
-					segmentArea.classed("selected", function(d) {
-						return s[0] <= d.values[0].x && d.values[1].x <= s[1];
-					});
-
-					var point = wrap.selectAll('.kf-point');
-					point.classed("selected", function(d) {
-							return s[0] <= d.x && d.x <= s[1] && d.qElemNumbers;
-						})
-						.attr('r', function(d) {
-							return (s[0] <= d.x && d.x <= s[1] && d.qElemNumbers) ? 5 : d.size || 0;
+					brushg.selectAll(".resize.e text")
+						.text(function() {
+							return formatDate(s[1]) == formatDate(s[0]) ? '' : formatDate(s[1]);
 						});
 
+					brushg.selectAll(".resize.w text")
+						.text(function() {
+							return formatDate(s[1]) == formatDate(s[0]) ? '' : formatDate(s[0] + 1);
+						});
+
+
+					data[0].values.forEach(function(d) {
+						if (s[0] <= d.x && d.x <= s[1]) {
+							arr = arr.concat(d.qElemNumbers ? d.qElemNumbers : []);
+						}
+					});
+
+					if (arr.length > 0) {
+
+						var segment = wrap.selectAll('line');
+						segment.classed("selected", function(d) {
+							return s[0] <= d.x1 && d.x2 <= s[1];
+						});
+
+						var segmentArea = wrap.selectAll('.kf-segmentarea');
+						segmentArea.classed("selected", function(d) {
+							return s[0] <= d.values[0].x && d.values[1].x <= s[1];
+						});
+
+						var point = wrap.selectAll('.kf-point');
+						point.classed("selected", function(d) {
+								return s[0] <= d.x && d.x <= s[1] && d.qElemNumbers;
+							})
+							.attr('r', function(d) {
+								return (s[0] <= d.x && d.x <= s[1] && d.qElemNumbers) ? 5 : d.size || 0;
+							});
+
+					}
 				}
 			}
 
 			function brushend() {
+				if (!inEditMode) {
 
-				var self = that
-				var s = brush.extent();
+					var self = that
+					var s = brush.extent();
 
-				data[0].values.forEach(function(d) {
-					if (s[0] <= d.x && d.x <= s[1]) {
-						selectionArray0 = selectionArray0.concat(d.qElemNumbers ? d.qElemNumbers : []);
-					}
-				});
+					data[0].values.forEach(function(d) {
+						if (s[0] <= d.x && d.x <= s[1]) {
+							selectionArray0 = selectionArray0.concat(d.qElemNumbers ? d.qElemNumbers : []);
+						}
+					});
 
-				if (!arraysEqual(selectionArray0, selectionArray)) {
+					if (!arraysEqual(selectionArray0, selectionArray)) {
 
-					if (selectionArray0.length > 0) {
+						if (selectionArray0.length > 0) {
 
-						var toogleArray = _.difference(selectionArray0, selectionArray).concat(_.difference(selectionArray, selectionArray0))
+							var toogleArray = _.difference(selectionArray0, selectionArray).concat(_.difference(selectionArray, selectionArray0))
 
-						self.selectValues(0, toogleArray, true);
-						selectionArray = selectionArray0;
-						selectionArray0 = [];
+							self.selectValues(0, toogleArray, true);
+							selectionArray = selectionArray0;
+							selectionArray0 = [];
+						}
 					}
 				}
 			}
@@ -691,6 +695,12 @@ function compareChart() {
 		return chart;
 	};
 
+	chart.dimFormat = function(_) {
+		if (!arguments.length) return dimFormat;
+		dimFormat = _;
+		return chart;
+	};
+
 
 
 	return chart;
@@ -803,7 +813,7 @@ function x_date_axis() {
 		width,
 		height,
 		rotateLabels = 0,
-		scale = d3.time.scale(),
+		scale = d3.scale.linear(),
 		axisLabelText = null;
 
 	var scale0;
@@ -941,7 +951,7 @@ function line() {
 			return d.y != null;
 		},
 
-		xScale = d3.time.scale(),
+		xScale = d3.scale.linear(),
 		yScale = d3.scale.linear(),
 		zScale = d3.scale.linear(),
 		xDomain = null,
@@ -1002,11 +1012,13 @@ function line() {
 
 			xScale.range([0, innerWidth]);
 
-			xScale.domain([d3.min(data[0].values.map(function(d) {
-				return d3.time.hour.offset(d.x, -12);
-			})), d3.max(data[0].values.map(function(d) {
-				return d3.time.hour.offset(d.x, 12);
+			xScale.domain([d3.min(seriesData.map(function(d) {
+				return d.x - 0.5
+			})), d3.max(seriesData.map(function(d) {
+				return d.x + 0.5
 			}))]);
+
+			//xScale.nice();
 
 			var yExtent = d3.extent(seriesData.map(function(d) {
 				return d.y
@@ -1030,6 +1042,7 @@ function line() {
 				yScale.domain()[0] ?
 				yScale.domain([yScale.domain()[0] - yScale.domain()[0] * 0.01, yScale.domain()[1] + yScale.domain()[1] * 0.01]) : yScale.domain([-1, 1]);
 
+			
 			if (isNaN(xScale.domain()[0])) {
 				xScale.domain([-1, 1]);
 			}
@@ -1037,6 +1050,7 @@ function line() {
 			if (isNaN(yScale.domain()[0])) {
 				yScale.domain([-1, 1]);
 			}
+			
 
 			yScale.nice();
 

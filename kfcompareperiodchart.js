@@ -4,15 +4,9 @@
 //Add custom format for the dimensions
 
 
-define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.utils/property-resolver", "general.utils/number-formatting", "util", "qlik", "client.utils/state", "./d3", "./components/kfMeasureList", "./components/kfTooltipNumberFormatter", "./components/kfDimNumberFormatter", "./comparechart", "./lodash.min"], function($, cssContent, translator, pResolver, numFormatting, util, qlik, state) {
+define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.utils/property-resolver", "general.utils/number-formatting", "objects.utils/num-date-time-formatter", "util", "qlik", "client.utils/state", "core.utils/theme", "./d3", "./components/kfMeasureList", "./components/kfTooltipNumberFormatter", "./components/kfDimNumberFormatter", "./comparechart", "./lodash.min"], function($, cssContent, translator, pResolver, numFormatting, numFormatter, util, qlik, state, theme) {
 	'use strict';
 	$("<style>").html(cssContent).appendTo("head");
-
-	function convertDate(date) {
-		var result = new Date(1900, 0, 0);
-		result.setDate(result.getDate() + date - 1);
-		return result;
-	};
 
 	function updateDefaultModifiers(object) {
 
@@ -84,22 +78,35 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 		return true;
 	}
 
-	function k(b, d) {
-		return pResolver.getValue(b, "tooltip.qNumberPresentations.qFmt") === numFormatting.getDefaultNumericFormat(b.tooltip.qNumberPresentations, d ? d.localeInfo : "")
+	//TODO CREATE TWO FUNCTIONS INSTEAD OF TWO
+	//Measure
+	function m(b) {
+		var c = pResolver.getValue(b, "qDef.qNumFormat.qType");
+		return ["R", "M", "IV"].contains(c) || "U" !== c && pResolver.getValue(b, "qDef.numFormatFromTemplate", !0) === !1
 	}
 
 	function l(b, d) {
 		return pResolver.getValue(b, "qDef.qNumFormat.qFmt") === numFormatting.getDefaultNumericFormat(b.qDef.qNumFormat, d ? d.localeInfo : "")
 	}
 
-	function m(b) {
-		var c = pResolver.getValue(b, "qDef.qNumFormat.qType");
-		return ["R", "M", "IV"].contains(c) || "U" !== c && pResolver.getValue(b, "qDef.numFormatFromTemplate", !0) === !1
+	//tooltip
+	function k(b, d) {
+		return pResolver.getValue(b, "tooltip.qNumberPresentations.qFmt") === numFormatting.getDefaultNumericFormat(b.tooltip.qNumberPresentations, d ? d.localeInfo : "")
 	}
 
 	function n(b) {
 		var c = pResolver.getValue(b, "tooltip.qNumberPresentations.qType");
 		return ["R", "M", "IV"].contains(c) || "U" !== c && pResolver.getValue(b, "tooltip.numFormatFromTemplate", !0) === !1
+	}
+
+	//Dim
+	function p(b) {
+		var c = pResolver.getValue(b, "qListObjectDef.qDef.qNumberPresentations.qType");
+		return ["R", "M", "IV"].contains(c) || "U" !== c && pResolver.getValue(b, "qListObjectDef.qDef.numFormatFromTemplate", !0) === !1
+	}
+
+	function o(b, d) {
+		return pResolver.getValue(b, "qListObjectDef.qDef.qNumberPresentations.qFmt") === numFormatting.getDefaultNumericFormat(b.tooltip.qNumberPresentations, d ? d.localeInfo : "")
 	}
 
 
@@ -109,6 +116,9 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 			version: 1.0,
 			kfMeasureList: [],
 			kfModifierList: [],
+			color: {
+				dimensionScheme: 'd310'
+			},
 			activeMeasure: 0,
 			qListObjectDef: {
 				comparePeriodType: 0,
@@ -178,8 +188,12 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 							ref: "qListObjectDef.qDef.qFieldDefs.0",
 							translation: "Date field",
 							show: function(data) {
-								return data.qListObjectDef && !data.qListObjectDef.qLibraryId;
-							}
+									return data.qListObjectDef && !data.qListObjectDef.qLibraryId;
+								}
+								/*,
+															change: function(a, b, d, e) {
+																qListObjectDef.qDef.qNumberPresentations[0].qType = 'U';
+															}*/
 						},
 						comparePeriodType: {
 							ref: "qListObjectDef.comparePeriodType",
@@ -235,8 +249,78 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 								value: -1,
 								label: "Descending"
 							}],
-							defaultValue: 1,
+							defaultValue: 1
+						},
+						numberFormattingType: {
+							type: "string",
+							component: "dropdown",
+							ref: "qListObjectDef.qDef.qNumberPresentations.0.qType",
+							translation: "properties.numberFormatting",
+							defaultValue: "U",
+							options: [{
+								value: "U",
+								translation: "Common.Auto"
+							}, {
+								value: "D",
+								translation: "properties.numberFormatting.types.date"
+							}],
+							change: function(a, b, d, e) {
+								numFormatting.setNumFmtPattern("qType", a.qListObjectDef.qDef.qNumberPresentations[0], e.localeInfo)
+							}
+						},
+						numberFormattingMode: {
+							type: "boolean",
+							component: "switch",
+							ref: "qListObjectDef.qDef.numFormatFromTemplate",
+							translation: "properties.numberFormatting.formatting",
+							defaultValue: !0,
+							options: [{
+								value: !0,
+								translation: "properties.numberFormatting.simple"
+							}, {
+								value: !1,
+								translation: "Common.Custom"
+							}],
+							show: function(b) {
+								return ["F", "D", "TS", "T"].contains(pResolver.getValue(b, "qListObjectDef.qDef.qNumberPresentations.0.qType"))
+							}
+						},
+						numberFormattingTemplates: {
+							type: "string",
+							component: "number-formatter-dropdown",
+							ref: "qListObjectDef.qDef.qNumberPresentations.0.qFmt",
+							defaultValue: "#,##0",
+							show: function(b) {
+								var c = pResolver.getValue(b, "qListObjectDef.qDef.qNumberPresentations.0.qType");
+								return ["F", "D", "TS", "T"].contains(c) && pResolver.getValue(b, "qListObjectDef.qDef.numFormatFromTemplate", !0) === !0
+							},
+							filter: function(b) {
+								return [pResolver.getValue(b, "qListObjectDef.qDef.qNumberPresentations.0.qType", "F")]
+							}
+						},
+						format: {
+							type: "string",
+							component: "kf-dim-number-formatter",
+							ref: "qListObjectDef.qDef.qNumberPresentations.0.qFmt",
+							resetTranslation: "properties.numberFormatting.resetPattern",
+							translation: "properties.numberFormatting.formatPattern",
+							defaultValue: "WWW YYYY-MM-DD",
+							show: function(a) {
+								return p(a)
+							},
+							invalid: function(a, b, c) {
+								if (["D", "T", "TS", "IV"].contains(a.qListObjectDef.qDef.qNumberPresentations[0].qType)) return !1;
+								var d = "R" === a.qListObjectDef.qDef.qNumberPresentations[0].qType ? a.qListObjectDef.qDef.qNumberPresentations[0].qDec : c.localeInfo["q" + ("M" === a.qListObjectDef.qDef.qNumberPresentations[0].qType ? "Money" : "") + "DecimalSep"],
+									e = new RegExp("(0|#)" + util.escapeRegExp(d) + "0*#*"),
+									f = (a.qListObjectDef.qDef.qNumberPresentations[0].qFmt || "").split(";"),
+									h = f[0].match(e),
+									i = h && h[0] ? h[0].length - 2 : 0,
+									j = f[1] ? f[1].match(e) : null,
+									k = j && j[0] ? j[0].length - 2 : 0;
+								return i > 15 || k > 15
+							}
 						}
+
 					}
 				},
 				kfMeasureList: {
@@ -720,21 +804,51 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 								}
 							}
 						},
-						/*colorsAndLegend: {
-							uses: "colorsAndLegend",
+						colorsAndLegend: {
+							//uses: "colorsAndLegend",
+							type: "items",
+							translation: "properties.colorsAndLegend",
+							grouped: !0,
 							items: {
 								colors: {
 									items: {
-										colorMode: {
-											filter: function(a, b) {
-												var c = ["primary"];
-												return 1 === b.getMeasures().length && b.getDimensions().length <= 1 && c.push("byMeasure"), (b.getMeasures().length > 1 || b.getDimensions().length > 1) && c.push("byDimension"), b.getMeasures().length >= 1 && c.push("byExpression"), c
-											}
-										}
+										colorSchemeDimension: {
+											ref: "color.dimensionScheme",
+											type: "string",
+											translation: "properties.colorScheme",
+											component: "item-selection-list",
+											defaultValue: "d310",
+											items: [{
+												colors: d3.scale.category10().domain(d3.range(0, 10)).range(),
+												type: "classes",
+												component: "color-scale",
+												translation: "D3 10 colors",
+												value: "d310"
+											}, {
+												colors: d3.scale.category20().domain(d3.range(0, 20)).range(),
+												type: "classes",
+												component: "color-scale",
+												translation: "D3 20 colors",
+												value: "d320"
+											}, {
+												colors: theme.colorSchemes.qualitativeScales[0].scale[theme.colorSchemes.qualitativeScales[0].scale.length - 1],
+												type: "classes",
+												component: "color-scale",
+												translation: theme.colorSchemes.qualitativeScales[0].translation || theme.colorSchemes.qualitativeScales[0].name,
+												value: "12"
+											}, {
+												colors: theme.colorSchemes.qualitativeScales[1].scale,
+												type: "classes",
+												component: "color-scale",
+												translation: theme.colorSchemes.qualitativeScales[1].translation || theme.colorSchemes.qualitativeScales[1].name,
+												value: "100"
+											}],
+											show: !0
+										},
 									}
 								}
 							}
-						},*/
+						},
 						dimensionAxis: {
 							type: "items",
 							label: translator.get("properties.xAxis"),
@@ -874,7 +988,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 								}
 							}
 						},
-						
+
 						tooltip: {
 							type: "items",
 							label: "Tooltip",
@@ -883,6 +997,12 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 								tooltipOptions: {
 									type: "items",
 									items: {
+										formatTyp: {
+											type: "string",
+											ref: "tooltip.qNumberPresentations.0.qType",
+											defaultValue: "D",
+											show: !1
+										},
 										format: {
 											type: "string",
 											component: "kf-tooltip-number-formatter",
@@ -934,7 +1054,12 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 		paint: function($element, layout) {
 
-			console.log(layout);
+			// console.log('layout');
+			// console.log(layout);
+			
+			var dateFormatter = new numFormatter(layout.qListObject.qDimensionInfo.qNumFormat.qFmt, layout.qListObject.qDimensionInfo.qNumFormat.qThou, layout.qListObject.qDimensionInfo.qNumFormat.qDec, 'D');
+
+			var tooltipFormatter = new numFormatter(layout.tooltip.qNumberPresentations[0].qFmt, layout.tooltip.qNumberPresentations[0].qThou, layout.tooltip.qNumberPresentations[0].qDec, 'D');
 
 			var errors = []
 
@@ -977,9 +1102,6 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 			var dateFieldIsDate = layout.qListObject.qDimensionInfo.qNumFormat.qType == 'D'
 
-			console.log('dateFieldIsDate');
-			console.log(dateFieldIsDate);
-
 			if (!dateFieldIsDate) {
 				errors.push({
 					"message": "Dimension is not of date format"
@@ -994,32 +1116,34 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 				var qMatrixCompare = layout.comparePeriod.qHyperCube.qDataPages[0].qMatrix;
 				var qMatrixDate = layout.qListObject.qDataPages[0].qMatrix;
 
-				console.log("qMatrixDate");
-				console.log(qMatrixDate);
-
 				//check the selected dates
 				var selectedates = qMatrixDate.filter(function(d) {
 					return (d[0].qState == 'S')
 				}).map(function(d) {
-					return d[0].qNum
+					return {
+						x: d[0].qNum,
+						xTick: d[0].qText
+					};
 				});
 
 				//check the possible dates
 				var possibleDates = qMatrixDate.filter(function(d) {
 					return (d[0].qState == 'O')
 				}).map(function(d) {
-					return d[0].qNum
+					return {
+						x: d[0].qNum,
+						xTick: d[0].qText
+					};
 				});
 
 				var selectionInDateDim = (selectedates.length != 0)
 
-
 				if (selectionInDateDim) {
-					var minDate = selectedates[0]
-					var maxDate = selectedates[selectedates.length - 1]
+					var minDate = selectedates[0].x
+					var maxDate = selectedates[selectedates.length - 1].x
 				} else {
-					var minDate = possibleDates[0]; //+ layout.qListObject.shiftDateBy;
-					var maxDate = possibleDates[possibleDates.length - 1];
+					var minDate = possibleDates[0].x; //+ layout.qListObject.shiftDateBy;
+					var maxDate = possibleDates[possibleDates.length - 1].x;
 				}
 
 
@@ -1122,6 +1246,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 								default:
 									qDefString = qDefString.replace(/#set/gi, "");
 							}
+
 							if (modKey == 0) {
 								reply.currentPeriod.qHyperCubeDef.qMeasures.push({
 									qDef: {
@@ -1154,21 +1279,55 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 				if (layout.qListObject.periodType == 1) {
 					if (selectedates.length > 0) {
 						dimBuckets = selectedates.map(function(d) {
-							return convertDate(d);
+							return {
+								x: d.x,
+								xTick: d.xTick
+							};
 						});
 					} else {
 						dimBuckets = possibleDates.map(function(d) {
-							return convertDate(d);
+							return {
+								x: d.x,
+								xTick: d.xTick
+							};
 						});
 					}
 
 				} else {
-					dimBuckets = d3.time.days(convertDate(minDate), convertDate(maxDate + 1));
+					dimBuckets = d3.range(minDate, maxDate + 1);
+					dimBuckets = dimBuckets.map(function (d) {
+						return {x:d,
+								xTick:dateFormatter.format(d)}
+					})
+				}
+					
+				var dimRangeBuckets = d3.range(minDate, maxDate + 1);
+				dimRangeBuckets = dimRangeBuckets.map(function (d) {
+						return {x:d,
+								xTick:dateFormatter.format(d)}
+					})
+
+				
+				var color = d3.scale.category10().domain(d3.range(0, 10)).range(); // set the colour scale
+
+				switch (layout.color.dimensionScheme) {
+					case "d310":
+						color = d3.scale.category10().domain(d3.range(0, 10)).range()
+						break;
+					case "d320":
+						color = d3.scale.category20().domain(d3.range(0, 20)).range()
+						break;
+					case "12":
+						color = theme.colorSchemes.qualitativeScales[0].scale[theme.colorSchemes.qualitativeScales[0].scale.length - 1]
+						break;
+					case "100":
+						color = theme.colorSchemes.qualitativeScales[1].scale
+						break;
+					default:
+						color = d3.scale.category10().domain(d3.range(0, 10)).range()
 				}
 
-				var dimRangeBuckets = d3.time.days(convertDate(minDate), convertDate(maxDate + 1));
 
-				var color = d3.scale.category10().domain(d3.range(0, 10)); // set the colour scale
 
 				if (layout.kfMeasureList.length == 0) {
 					errors.push({
@@ -1184,6 +1343,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 						});
 					} else {
 
+
 						var missingValues = 0
 
 						var missingValue = layout.nullMode == 'gap' ? null : 0;
@@ -1193,13 +1353,15 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 						var newData = qMatrixCurrent.map(function(d) {
 
 
+
 							if (d[key + 1].qNum == 'NaN') {
 								missingValues += 1
 							}
 
 							return {
 								"qElemNumbers": [d[0].qElemNumber],
-								"x": convertDate(d[0].qNum),
+								"x": d[0].qNum,
+								"xTick": dateFormatter.format(d[0].qNum),
 								"xText": d[0].qText,
 								"y": d[key + 1].qNum,
 								"yText": d[key + 1].qText,
@@ -1216,10 +1378,11 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 						newData = dimBuckets
 							.map(function(dimBucket) {
 								return _.find(newData, {
-									x: dimBucket
+									x: dimBucket.x
 								}) || {
-									x: dimBucket,
-									xText: '-',
+									x: dimBucket.x,
+									xTick: dimBucket.xTick,
+									xText: tooltipFormatter.format(dimBucket.x),
 									y: missingValue,
 									yText: '-',
 									size: dataPointSize
@@ -1229,10 +1392,11 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 						newData = dimRangeBuckets
 							.map(function(dimRangeBuckets) {
 								return _.find(newData, {
-									x: dimRangeBuckets
+									x: dimRangeBuckets.x
 								}) || {
-									x: dimRangeBuckets,
-									xText: '-',
+									x: dimRangeBuckets.x,
+									xTick: dimRangeBuckets.xTick,
+									xText: tooltipFormatter.format(dimRangeBuckets.x),
 									y: missingValue,
 									yText: '-',
 									size: dataPointSize
@@ -1242,7 +1406,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 						data.push({
 							"key": kfMea.qDef.kfMeasureLabel,
 							"label": "",
-							"color": color(key * 2),
+							"color": color[key * 2],
 							"area": layout.lineType == 'area',
 							"disabled": key != layout.activeMeasure,
 							"values": newData
@@ -1250,7 +1414,8 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 						newData = qMatrixCompare.map(function(d) {
 							return {
-								"x": convertDate(d[0].qNum - layout.qListObject.shiftDateBy),
+								"x": d[0].qNum - layout.qListObject.shiftDateBy,
+								"xTick": dateFormatter.format(d[0].qNum - layout.qListObject.shiftDateBy),
 								"xText": d[0].qText,
 								"y": d[key + 1].qNum,
 								"yText": d[key + 1].qText,
@@ -1261,10 +1426,11 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 						newData = dimBuckets
 							.map(function(dimBucket) {
 								return _.find(newData, {
-									x: dimBucket
+									x: dimBucket.x
 								}) || {
-									x: dimBucket,
-									xText: '-',
+									x: dimBucket.x,
+									xTick: dimBucket.xTick,
+									xText: tooltipFormatter.format(dimBucket.x - layout.qListObject.shiftDateBy),
 									y: missingValue,
 									yText: '-',
 									size: dataPointSize
@@ -1274,10 +1440,11 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 						newData = dimRangeBuckets
 							.map(function(dimRangeBuckets) {
 								return _.find(newData, {
-									x: dimRangeBuckets
+									x: dimRangeBuckets.x
 								}) || {
-									x: dimRangeBuckets,
-									xText: '-',
+									x: dimRangeBuckets.x,
+									xTick: dimRangeBuckets.xTick,
+									xText: tooltipFormatter.format(dimRangeBuckets.x - layout.qListObject.shiftDateBy),
 									y: missingValue,
 									yText: '-',
 									size: dataPointSize
@@ -1287,7 +1454,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 						data.push({
 							"key": kfMea.qDef.kfMeasureLabel + ' - compare',
 							"label": "",
-							"color": color((key * 2) + 1),
+							"color": color[(key * 2) + 1],
 							"comparePeriod": true,
 							"disabled": key != layout.activeMeasure,
 							"values": newData
@@ -1307,8 +1474,6 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 			}
 
-			console.log('errors');
-			console.log(errors);
 			// Chart object width
 			var width = $element.width();
 			// Chart object height
@@ -1327,7 +1492,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 			//update vis if all requierments are fullfilled else through error messages
 			if (errors.length == 0) {
-				viz(data, labels, width, height, id, layout, me, state.isInEditMode());
+				viz(data, labels, width, height, id, layout, me, state.isInEditMode(), dateFormatter);
 			} else {
 				var html = '<div class="object-error"><div class="object-error-content"><div class="object-error-title">Error</div>'
 
@@ -1344,7 +1509,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 	};
 });
 
-var viz = function(data, labels, width, height, id, layout, that, isInEditMode) {
+var viz = function(data, labels, width, height, id, layout, that, isInEditMode, dimFormatter) {
 
 	var chart = compareChart();
 
@@ -1366,6 +1531,7 @@ var viz = function(data, labels, width, height, id, layout, that, isInEditMode) 
 		.inEditMode(isInEditMode)
 		.that(that)
 		.symbols(symbols)
+		.dimFormat(dimFormatter)
 		.legend().that(that);
 
 	d3.select("#" + id).append('svg')
