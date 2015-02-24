@@ -78,17 +78,16 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 		return true;
 	}
 
-	//TODO CREATE TWO FUNCTIONS INSTEAD OF TWO
+	//TODO CREATE TWO FUNCTIONS INSTEAD OF SIX
 	//Measure
-	function m(b) {
-		var c = pResolver.getValue(b, "qDef.qNumFormat.qType");
-		return ["R", "M", "IV"].contains(c) || "U" !== c && pResolver.getValue(b, "qDef.numFormatFromTemplate", !0) === !1
-	}
-
 	function l(b, d) {
 		return pResolver.getValue(b, "qDef.qNumFormat.qFmt") === numFormatting.getDefaultNumericFormat(b.qDef.qNumFormat, d ? d.localeInfo : "")
 	}
 
+	function m(b) {
+		var c = pResolver.getValue(b, "qDef.qNumFormat.qType");
+		return ["R", "M", "IV"].contains(c) || "U" !== c && pResolver.getValue(b, "qDef.numFormatFromTemplate", !0) === !1
+	}
 	//tooltip
 	function k(b, d) {
 		return pResolver.getValue(b, "tooltip.qNumberPresentations.qFmt") === numFormatting.getDefaultNumericFormat(b.tooltip.qNumberPresentations, d ? d.localeInfo : "")
@@ -1054,12 +1053,10 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 		paint: function($element, layout) {
 
-			// console.log('layout');
-			// console.log(layout);
-			
-			var dateFormatter = new numFormatter(layout.qListObject.qDimensionInfo.qNumFormat.qFmt, layout.qListObject.qDimensionInfo.qNumFormat.qThou, layout.qListObject.qDimensionInfo.qNumFormat.qDec, 'D');
 
-			var tooltipFormatter = new numFormatter(layout.tooltip.qNumberPresentations[0].qFmt, layout.tooltip.qNumberPresentations[0].qThou, layout.tooltip.qNumberPresentations[0].qDec, 'D');
+			var dateFormatter = new numFormatter(this.localeInfo, layout.qListObject.qDimensionInfo.qNumFormat.qFmt, layout.qListObject.qDimensionInfo.qNumFormat.qThou, layout.qListObject.qDimensionInfo.qNumFormat.qDec, 'D');
+
+			var tooltipFormatter = new numFormatter(this.localeInfo, layout.tooltip.qNumberPresentations[0].qFmt, layout.tooltip.qNumberPresentations[0].qThou, layout.tooltip.qNumberPresentations[0].qDec, 'D');
 
 			var errors = []
 
@@ -1073,7 +1070,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 						kfFilterSetList: [{
 							readOnly: true,
 							filterExpression: "",
-							field: "date",
+							field: "",
 							kfFilterType: 3,
 							values: "",
 							rangeFrom: "",
@@ -1087,7 +1084,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 						kfFilterSetList: [{
 							readOnly: true,
 							filterExpression: "",
-							field: "date",
+							field: "",
 							kfFilterType: 3,
 							values: "",
 							rangeFrom: "",
