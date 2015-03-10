@@ -121,7 +121,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 			activeMeasure: 0,
 			qListObjectDef: {
 				comparePeriodType: 0,
-				shiftDateBy: -364,
+				shiftDateBy: 364,
 				periodType: 0,
 				qSortCriterias: {
 					qSortByNumeric: 1
@@ -214,7 +214,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 							ref: "qListObjectDef.shiftDateBy",
 							label: "Shift date by",
 							type: "number",
-							defaultValue: -364,
+							defaultValue: 364,
 							show: function(data) {
 								return data.qListObjectDef.comparePeriodType == 2;
 							}
@@ -1053,10 +1053,14 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 		paint: function($element, layout) {
 
+			console.log('backendApi');
+			console.log(this);
+			console.log(c);
+			console.log(layout);
+/**/
+			var dateFormatter = new numFormatter(this.backendApi.localeInfo, layout.qListObject.qDimensionInfo.qNumFormat.qFmt, layout.qListObject.qDimensionInfo.qNumFormat.qThou, layout.qListObject.qDimensionInfo.qNumFormat.qDec, 'D');
 
-			var dateFormatter = new numFormatter(this.localeInfo, layout.qListObject.qDimensionInfo.qNumFormat.qFmt, layout.qListObject.qDimensionInfo.qNumFormat.qThou, layout.qListObject.qDimensionInfo.qNumFormat.qDec, 'D');
-
-			var tooltipFormatter = new numFormatter(this.localeInfo, layout.tooltip.qNumberPresentations[0].qFmt, layout.tooltip.qNumberPresentations[0].qThou, layout.tooltip.qNumberPresentations[0].qDec, 'D');
+			var tooltipFormatter = new numFormatter(this.backendApi.localeInfo, layout.tooltip.qNumberPresentations[0].qFmt, layout.tooltip.qNumberPresentations[0].qThou, layout.tooltip.qNumberPresentations[0].qDec, 'D');
 
 			var errors = []
 
@@ -1151,11 +1155,11 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 					if (reply.qListObjectDef.comparePeriodType == 0) { //previous year
 
-						reply.qListObjectDef.shiftDateBy = -364
+						reply.qListObjectDef.shiftDateBy = 364
 
 					} else if (reply.qListObjectDef.comparePeriodType == 1) { //previous period
 
-						reply.qListObjectDef.shiftDateBy = minDate - maxDate - 1
+						reply.qListObjectDef.shiftDateBy = -(minDate - maxDate - 1)
 
 					}
 
