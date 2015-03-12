@@ -121,7 +121,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 			activeMeasure: 0,
 			qListObjectDef: {
 				comparePeriodType: 0,
-				shiftDateBy: 364,
+				shiftDateBy: -364,
 				periodType: 0,
 				qSortCriterias: {
 					qSortByNumeric: 1
@@ -214,7 +214,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 							ref: "qListObjectDef.shiftDateBy",
 							label: "Shift date by",
 							type: "number",
-							defaultValue: 364,
+							defaultValue: -364,
 							show: function(data) {
 								return data.qListObjectDef.comparePeriodType == 2;
 							}
@@ -1151,11 +1151,11 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 					if (reply.qListObjectDef.comparePeriodType == 0) { //previous year
 
-						reply.qListObjectDef.shiftDateBy = 364
+						reply.qListObjectDef.shiftDateBy = -364
 
 					} else if (reply.qListObjectDef.comparePeriodType == 1) { //previous period
 
-						reply.qListObjectDef.shiftDateBy = -(minDate - maxDate - 1)
+						reply.qListObjectDef.shiftDateBy = minDate - maxDate - 1
 
 					}
 
@@ -1412,7 +1412,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 						newData = qMatrixCompare.map(function(d) {
 							return {
 								"x": d[0].qNum - layout.qListObject.shiftDateBy,
-								"xTick": dateFormatter.format(d[0].qNum - layout.qListObject.shiftDateBy),
+								"xTick": dateFormatter.format(d[0].qNum + layout.qListObject.shiftDateBy),
 								"xText": d[0].qText,
 								"y": d[key + 1].qNum,
 								"yText": d[key + 1].qText,
@@ -1427,7 +1427,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 								}) || {
 									x: dimBucket.x,
 									xTick: dimBucket.xTick,
-									xText: tooltipFormatter.format(dimBucket.x - layout.qListObject.shiftDateBy),
+									xText: tooltipFormatter.format(dimBucket.x + layout.qListObject.shiftDateBy),
 									y: missingValue,
 									yText: '-',
 									size: dataPointSize
@@ -1441,7 +1441,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 								}) || {
 									x: dimRangeBuckets.x,
 									xTick: dimRangeBuckets.xTick,
-									xText: tooltipFormatter.format(dimRangeBuckets.x - layout.qListObject.shiftDateBy),
+									xText: tooltipFormatter.format(dimRangeBuckets.x + layout.qListObject.shiftDateBy),
 									y: missingValue,
 									yText: '-',
 									size: dataPointSize
