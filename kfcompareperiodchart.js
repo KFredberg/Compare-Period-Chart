@@ -1053,11 +1053,6 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 		paint: function($element, layout) {
 
-			console.log('backendApi');
-			console.log(this);
-			console.log(c);
-			console.log(layout);
-/**/
 			var dateFormatter = new numFormatter(this.backendApi.localeInfo, layout.qListObject.qDimensionInfo.qNumFormat.qFmt, layout.qListObject.qDimensionInfo.qNumFormat.qThou, layout.qListObject.qDimensionInfo.qNumFormat.qDec, 'D');
 
 			var tooltipFormatter = new numFormatter(this.backendApi.localeInfo, layout.tooltip.qNumberPresentations[0].qFmt, layout.tooltip.qNumberPresentations[0].qThou, layout.tooltip.qNumberPresentations[0].qDec, 'D');
