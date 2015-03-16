@@ -85,10 +85,10 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 	}
 
 	function m(b) {
-		var c = pResolver.getValue(b, "qDef.qNumFormat.qType");
-		return ["R", "M", "IV"].contains(c) || "U" !== c && pResolver.getValue(b, "qDef.numFormatFromTemplate", !0) === !1
-	}
-	//tooltip
+			var c = pResolver.getValue(b, "qDef.qNumFormat.qType");
+			return ["R", "M", "IV"].contains(c) || "U" !== c && pResolver.getValue(b, "qDef.numFormatFromTemplate", !0) === !1
+		}
+		//tooltip
 	function k(b, d) {
 		return pResolver.getValue(b, "tooltip.qNumberPresentations.qFmt") === numFormatting.getDefaultNumericFormat(b.tooltip.qNumberPresentations, d ? d.localeInfo : "")
 	}
@@ -1056,7 +1056,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 		paint: function($element, layout) {
 
-			
+
 			var dateFormatter = new numFormatter(this.localeInfo, layout.qListObject.qDimensionInfo.qNumFormat.qFmt, layout.qListObject.qDimensionInfo.qNumFormat.qThou, layout.qListObject.qDimensionInfo.qNumFormat.qDec, 'D');
 
 			var tooltipFormatter = new numFormatter(this.localeInfo, layout.tooltip.qNumberPresentations[0].qFmt, layout.tooltip.qNumberPresentations[0].qThou, layout.tooltip.qNumberPresentations[0].qDec, 'D');
@@ -1271,7 +1271,7 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 				//getData
 
-				
+
 				var data = []
 				var dimBuckets = []
 
@@ -1296,49 +1296,54 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 
 				} else if (layout.qListObject.periodType == 2) {
 					//get dates from qMatrixCurrent
-					var	datesCurrent = qMatrixCurrent.map(function(d) {
-							return d[0].qNum;
-							//xTick:dateFormatter.format(d[0].qNum)
-						});
+					var datesCurrent = qMatrixCurrent.filter(function(d) {
+						return (!d[0].qIsNull)
+					}).map(function(d) {
+						return d[0].qNum;
+					});
 					//get dates from qMatrixCompare
-					var	datesCompare = qMatrixCompare.map(function(d) {
-							return 	d[0].qNum - layout.qListObject.shiftDateBy;
-							
-
-						});
+					var datesCompare = qMatrixCompare.filter(function(d) {
+						return (!d[0].qIsNull)
+					}).map(function(d) {
+						return d[0].qNum - layout.qListObject.shiftDateBy;
+					});
 
 					//concate qMatrixCurrent and qMatrixCompare and store into dimBuckets
-					var tempDimBuckets =  _.union(datesCurrent,datesCompare);
+					var tempDimBuckets = _.union(datesCurrent, datesCompare);
 
 					tempDimBuckets.sort();
 
 					dimBuckets = tempDimBuckets.map(function(d) {
 						return {
-							x:d,
-							xTick:dateFormatter.format(d)
+							x: d,
+							xTick: dateFormatter.format(d)
 						}
 					});
 
 					//set minDate and maxDate from dimBuckets
 					minDate = dimBuckets[0].x;
-					maxDate = dimBuckets[dimBuckets.length-1].x;
+					maxDate = dimBuckets[dimBuckets.length - 1].x;
 
 
 				} else {
 					dimBuckets = d3.range(minDate, maxDate + 1);
-					dimBuckets = dimBuckets.map(function (d) {
-						return {x:d,
-								xTick:dateFormatter.format(d)}
+					dimBuckets = dimBuckets.map(function(d) {
+						return {
+							x: d,
+							xTick: dateFormatter.format(d)
+						}
 					})
 				}
-					
-				var dimRangeBuckets = d3.range(minDate, maxDate + 1);
-				dimRangeBuckets = dimRangeBuckets.map(function (d) {
-						return {x:d,
-								xTick:dateFormatter.format(d)}
-					})
 
-				
+				var dimRangeBuckets = d3.range(minDate, maxDate + 1);
+				dimRangeBuckets = dimRangeBuckets.map(function(d) {
+					return {
+						x: d,
+						xTick: dateFormatter.format(d)
+					}
+				})
+
+
 				var color = d3.scale.category10().domain(d3.range(0, 10)).range(); // set the colour scale
 
 				switch (layout.color.dimensionScheme) {

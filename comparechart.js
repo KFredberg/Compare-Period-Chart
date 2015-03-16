@@ -563,7 +563,7 @@ function compareChart() {
 						diffSymbol = '&#x25bc' //down triangle
 						diff = formatPercent(diff);
 					}
-					if (diff > 0 && diff != Infinity) {
+					else if (diff > 0 && diff != Infinity) {
 						diffColor = 'style="color:rgb(0,255,0);"' //green
 						diffSymbol = '&#x25b2' //up triangle
 						diff = formatPercent(diff);
