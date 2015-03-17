@@ -46,6 +46,9 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 			case 3:
 				pResolver.setValue(object, "filterExpression", object.field + "={'>=" + object.rangeFrom + "<=" + object.rangeTo + "'}");
 				break;
+			case 4:
+				pResolver.setValue(object, "filterExpression", object.custom);
+				break;
 			default:
 				pResolver.setValue(object, "filterExpression", "default");
 		}
@@ -626,6 +629,9 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 									expressionType: "field",
 									ref: "field",
 									label: "Field",
+									show: function(a) {
+										return (a.kfFilterType != 4);
+									},
 									change: function(a, b) {
 										updateFilterExpression(a, b);
 										return updateFilterSetExpression(b.properties.kfModifierList);
@@ -647,6 +653,9 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 									}, {
 										value: 3,
 										label: "Range"
+									}, {
+										value: 4,
+										label: "Custom"
 									}],
 									show: true,
 									defaultValue: 0,
@@ -661,6 +670,18 @@ define(["jquery", "text!./kfcompareperiodchart.css", "translator", "general.util
 									label: "Values",
 									show: function(a) {
 										return (a.kfFilterType == 1 || a.kfFilterType == 2);
+									},
+									change: function(a, b) {
+										updateFilterExpression(a, b);
+										return updateFilterSetExpression(b.properties.kfModifierList);
+									}
+								},
+								custom: {
+									type: "string",
+									ref: "custom",
+									label: "Custom string",
+									show: function(a) {
+										return (a.kfFilterType == 4);
 									},
 									change: function(a, b) {
 										updateFilterExpression(a, b);
